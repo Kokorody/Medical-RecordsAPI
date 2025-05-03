@@ -1,0 +1,7 @@
+runtime: nodejs18
+
+env_variables:
+  DB_HOST: 127.0.0.1
+  DB_USER: kemas
+  DB_PASSWORD: Palembang987
+  DB_NAME: mydb
