@@ -3,6 +3,7 @@
 
 # Node dependencies
 node_modules/
+app.yaml
 
 # Logs
 npm-debug.log*
