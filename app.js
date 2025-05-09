@@ -1,5 +1,7 @@
 const express = require('express');
 const dotenv = require('dotenv');
+// const swaggerDocs = swaggerJsDoc(swaggerOptions);
+// app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 dotenv.config();
 
 const app = express();
