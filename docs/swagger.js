@@ -23,7 +23,7 @@ const swaggerOptions = {
       },
       
       schemas: {
-        // Patient schema (existing)
+        // Patient 
         Patient: {
           type: 'object',
           required: ['code_patient', 'name_patient'],
@@ -60,7 +60,7 @@ const swaggerOptions = {
           }
         },
         
-        // Doctor schema (new)
+        // Doctor 
         Doctor: {
           type: 'object',
           required: ['name_doctor', 'licence'],
@@ -84,7 +84,7 @@ const swaggerOptions = {
           }
         },
         
-        // Medical Record schema (new)
+        // Medical Record 
         MedicalRecord: {
           type: 'object',
           required: ['code_medrec', 'id_patient', 'id_doctor'],
@@ -127,7 +127,7 @@ const swaggerOptions = {
       }
     ],
     paths: {
-      // Patient paths (existing)
+      // ini swagger Patient docsnya jak
       '/patient': {
         get: {
           summary: 'Get all patients',
@@ -399,7 +399,7 @@ const swaggerOptions = {
         }
       },
       
-      // Doctor paths (new)
+      // ini Doctor docs
       '/doctor': {
         get: {
           summary: 'Get all doctors',
@@ -651,7 +651,7 @@ const swaggerOptions = {
         }
       },
       
-      // Medical Record paths (new)
+      // ini utk Medical Record 
       '/medrec': {
         get: {
           summary: 'Get all medical records',
