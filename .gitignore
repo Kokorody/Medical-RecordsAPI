@@ -24,7 +24,6 @@ build/
 *.log
 
 #jwt
-config\jwt.config.js
 usser.js
-docs\swagger.js
+docs/swagger.js
 
