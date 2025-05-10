@@ -15,14 +15,59 @@ const swaggerOptions = {
     ],
     components: {
       securitySchemes: {
-        ApiKeyAuth: {
-          type: 'apiKey',
-          in: 'header',
-          name: 'x-api-key'
+        // ApiKeyAuth: {
+        //   type: 'apiKey',
+        //   in: 'header',
+        //   name: 'x-api-key'
+        // },
+        BearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT'
         }
       },
       
       schemas: {
+         //user
+          AuthResponse: {
+            type: 'object',
+            properties: {
+              message: {
+                type: 'string'
+              },
+              accessToken: {
+                type: 'string'
+              },
+              refreshToken: {
+                type: 'string'
+              },
+              user: {
+                type: 'object',
+                properties: {
+                  id: {
+                    type: 'integer'
+                  },
+                  username: {
+                    type: 'string'
+                  },
+                  role: {
+                    type: 'string'
+                  }
+                }
+              }
+            }
+          },
+            RefreshTokenRequest: {
+              type: 'object',
+              required: ['refreshToken'],
+              properties: {
+                refreshToken: {
+                  type: 'string',
+                  description: 'The refresh token'
+                }
+              }
+            },
+
         // Patient 
         Patient: {
           type: 'object',
@@ -118,15 +163,183 @@ const swaggerOptions = {
               description: 'Additional notes about the medical record'
             }
           }
-        }
+        },
       }
     },
+
+    // ini securitynya (global except auth regist & login)  !
     security: [
+      // {
+      //   ApiKeyAuth: []
+      // },
       {
-        ApiKeyAuth: []
+        BearerAuth: []
       }
     ],
+
+    // ini path/main !
     paths: {
+      //paht user
+      '/auth/register': {
+        post: {
+          security: [],
+          summary: 'Register a new user',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    username: {
+                      type: 'string'
+                    },
+                    password: {
+                      type: 'string',
+                      format: 'password'
+                    },
+                    role: {
+                      type: 'string',
+                      enum: ['user', 'admin']
+                    }
+                  },
+                  required: ['username', 'password']
+                }
+              }
+            }
+          },
+          responses: {
+            '201': {
+              description: 'User registered successfully'
+            },
+            '400': {
+              description: 'User already exists'
+            },
+            '500': {
+              description: 'Server error'
+            }
+          }
+        }
+      },
+      '/auth/login': {
+        post: {
+          security: [],
+          summary: 'Login a user',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    username: {
+                      type: 'string'
+                    },
+                    password: {
+                      type: 'string',
+                      format: 'password'
+                    }
+                  },
+                  required: ['username', 'password']
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'Login successful',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/AuthResponse'
+                  }
+                }
+              }
+            },
+            '401': {
+              description: 'Invalid credentials'
+            },
+            '500': {
+              description: 'Server error'
+            }
+          }
+        }
+      },
+      '/auth/refresh-token': {
+        post: {
+          security: [],
+          summary: 'Refresh access token',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/RefreshTokenRequest'
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'Token refreshed successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      accessToken: {
+                        type: 'string'
+                      },
+                      refreshToken: {
+                        type: 'string'
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            '401': {
+              description: 'Invalid refresh token'
+            },
+            '500': {
+              description: 'Server error'
+            }
+          }
+        }
+      },
+      '/auth/logout': {
+        post: {
+          summary: 'Logout a user',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    userId: {
+                      type: 'integer'
+                    }
+                  },
+                  required: ['userId']
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'Logout successful'
+            },
+            '400': {
+              description: 'User ID is required'
+            },
+            '500': {
+              description: 'Server error'
+            }
+          }
+        }
+      },
+
       // ini swagger Patient docsnya jak
       '/patient': {
         get: {
