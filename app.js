@@ -1,6 +1,7 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const swaggerUi = require('swagger-ui-express');
+
 dotenv.config();
 
 const app = express();
@@ -10,33 +11,48 @@ app.use(express.json());
 const swaggerDocs = require('./docs/swagger');
 
 // API Key Middleware
-const apiKeyMiddleware = (req, res, next) => {
-  const apiKey = req.headers['x-api-key'];
+// const apiKeyMiddleware = (req, res, next) => {
+//   const apiKey = req.headers['x-api-key'];
   
-  if (!apiKey || apiKey !== process.env.API_KEY) {
-    return res.status(401).json({ 
-      error: 'Unauthorized', 
-      message: 'Invalid or missing API key' 
-    });
-  }
+//   if (!apiKey || apiKey !== process.env.API_KEY) {
+//     return res.status(401).json({ 
+//       error: 'Unauthorized', 
+//       message: 'Invalid or missing API key' 
+//     });
+//   }
   
-  next();
-};
+//   next();
+// };
 
-// Apply API Key middleware to all routes except swagger docs
-app.use(/^(?!\/api-docs).*$/, apiKeyMiddleware);
+// Apply API Key middleware ke semua route except /api-docs
+// Middleware to protect all routes except /api-docs
+// app.use(/^(?!\/api-docs).*$/, apiKeyMiddleware);
 
-// Swagger documentation route
+// Swagger documentation 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Routing
+const authRoutes = require('./routes/authRoutes');
 const patientRoutes = require('./routes/patientroutes');
 const doctorRoutes = require('./routes/doctorroutes');
 const medrecRoutes = require('./routes/medrecroutes');
+const authMiddleware = require('./middleware/authorize.middleware');
+const authorize = require('./middleware/authorize.middleware');
 
-app.use('/patient', patientRoutes);
-app.use('/doctor', doctorRoutes);
-app.use('/medrec', medrecRoutes);
+// Public routes
+app.use('/auth', authRoutes);
+
+// Protected routes
+app.use('/doctor', authMiddleware, doctorRoutes);
+app.use('/medrec', authMiddleware, medrecRoutes);
+app.use('/patient', authMiddleware, patientRoutes);
+
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Something went wrong!', error: err.message });
+});
 
 // Start server
 const PORT = process.env.PORT || 3000;
