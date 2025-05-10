@@ -1,81 +1,99 @@
 const pool = require('../models/db');
 
 // GET ALL
-exports.getAllDoctors = (req, res) => {
-  pool.query('SELECT * FROM doctor', (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
+exports.getAllDoctors = async (req, res) => {
+  try {
+    const [results] = await pool.query('SELECT * FROM doctor');
     res.json(results);
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 // GET by ID
-exports.getDoctorById = (req, res) => {
+exports.getDoctorById = async (req, res) => {
   const { id } = req.params;
-  pool.query('SELECT * FROM doctor WHERE id_doctor = ?', [id], (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
-    if (results.length === 0) return res.status(404).json({ message: 'ID Search : Doctor not found' });
+  try {
+    const [results] = await pool.query('SELECT * FROM doctor WHERE id_doctor = ?', [id]);
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'ID Search : Doctor not found' });
+    }
     res.json(results[0]);
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 // GET by Licence
-exports.getDoctorByLicence = (req, res) => {
+exports.getDoctorByLicence = async (req, res) => {
   const { licence } = req.params;
-  pool.query('SELECT * FROM doctor WHERE licence = ?', [licence], (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
-    if (results.length === 0) return res.status(404).json({ message: 'Get by Licence : Doctor not found' });
+  try {
+    const [results] = await pool.query('SELECT * FROM doctor WHERE licence = ?', [licence]);
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'Get by Licence : Doctor not found' });
+    }
     res.json(results[0]);
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 // GET by Name
-exports.searchDoctorByName = (req, res) => {
+exports.searchDoctorByName = async (req, res) => {
   const { name } = req.query;
-  pool.query(
-    'SELECT * FROM doctor WHERE name_doctor LIKE ?',
-    [`%${name}%`],
-    (err, results) => {
-      if (err) return res.status(500).json({ error: err.message });
-      if (results.length === 0) return res.status(404).json({ message: 'OH NYOO No doctors found' });
-      res.json(results);
+  try {
+    const [results] = await pool.query('SELECT * FROM doctor WHERE name_doctor LIKE ?', [`%${name}%`]);
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'OH NYOO No doctors found' });
     }
-  );
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 // POST
-exports.createDoctor = (req, res) => {
+exports.createDoctor = async (req, res) => {
   const { id_doctor, name_doctor, specialization, licence } = req.body;
-  pool.query(
-    'INSERT INTO doctor (id_doctor, name_doctor, specialization, licence) VALUES (?, ?, ?, ?)',
-    [id_doctor, name_doctor, specialization, licence],
-    (err, result) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ id_doctor: result.insertId, name_doctor, specialization, licence });
-    }
-  );
+  try {
+    const [result] = await pool.query(
+      'INSERT INTO doctor (id_doctor, name_doctor, specialization, licence) VALUES (?, ?, ?, ?)',
+      [id_doctor, name_doctor, specialization, licence]
+    );
+    res.json({ id_doctor: result.insertId || id_doctor, name_doctor, specialization, licence });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 // PUT
-exports.updateDoctor = (req, res) => {
+exports.updateDoctor = async (req, res) => {
   const { id } = req.params;
   const { name_doctor, specialization, licence } = req.body;
-  pool.query(
-    'UPDATE doctor SET name_doctor = ?, specialization = ?, licence = ? WHERE id_doctor = ?',
-    [name_doctor, specialization, licence, id],
-    (err, result) => {
-      if (err) return res.status(500).json({ error: err.message });
-      if (result.affectedRows === 0) return res.status(404).json({ message: 'Put : Doctor not found' });
-      res.json({ message: 'Doctor updated' });
+  try {
+    const [result] = await pool.query(
+      'UPDATE doctor SET name_doctor = ?, specialization = ?, licence = ? WHERE id_doctor = ?',
+      [name_doctor, specialization, licence, id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Put : Doctor not found' });
     }
-  );
+    res.json({ message: 'Doctor updated' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 // DELETE
-exports.deleteDoctor = (req, res) => {
+exports.deleteDoctor = async (req, res) => {
   const { id } = req.params;
-  pool.query('DELETE FROM doctor WHERE id_doctor = ?', [id], (err, result) => {
-    if (err) return res.status(500).json({ error: err.message });
-    if (result.affectedRows === 0) return res.status(404).json({ message: 'Delete : Doctor not found' });
+  try {
+    const [result] = await pool.query('DELETE FROM doctor WHERE id_doctor = ?', [id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Delete : Doctor not found' });
+    }
     res.json({ message: 'Doctor deleted' });
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
