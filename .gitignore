@@ -22,3 +22,9 @@ Thumbs.db
 dist/
 build/
 *.log
+
+#jwt
+config\jwt.config.js
+usser.js
+docs\swagger.js
+
