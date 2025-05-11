@@ -1,3 +1,5 @@
+//ini optional jak, tapi lebih bagus pake file ini utk create table users
+
 const pool = require('./db');
 const bcrypt = require('bcrypt');
 
