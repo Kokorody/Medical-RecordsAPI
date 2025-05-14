@@ -10,24 +10,6 @@ app.use(express.json());
 // Import Swagger docs
 const swaggerDocs = require('./docs/swagger');
 
-// API Key Middleware
-// const apiKeyMiddleware = (req, res, next) => {
-//   const apiKey = req.headers['x-api-key'];
-  
-//   if (!apiKey || apiKey !== process.env.API_KEY) {
-//     return res.status(401).json({ 
-//       error: 'Unauthorized', 
-//       message: 'Invalid or missing API key' 
-//     });
-//   }
-  
-//   next();
-// };
-
-// Apply API Key middleware ke semua route except /api-docs
-// Middleware to protect all routes except /api-docs
-// app.use(/^(?!\/api-docs).*$/, apiKeyMiddleware);
-
 // Swagger documentation 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
