@@ -22,6 +22,12 @@ const authMiddleware = async (req, res, next) => {
       });
     }
     
+    // Check if token version is still valid
+    const isValidVersion = await authService.isTokenVersionValid(decoded.id, decoded.tokenVersion);
+    if (!isValidVersion) {
+      return res.status(401).json({ message: 'Token has been revoked' });
+    }
+    
     // Attach user to request
     req.user = decoded;
     
