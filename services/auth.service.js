@@ -5,29 +5,39 @@ const jwtConfig = require('../config/jwt.config');
 
 const authService = {
   // Generate tokens
-  generateTokens: (user) => {
-    // Remove sensitive data from user object
-    const userDataForToken = {
-      id: user.id,
-      username: user.username,
-      role: user.role
-    };
-    
-    // Create access token
-    const accessToken = jwt.sign(
-      userDataForToken,
-      jwtConfig.jwtSecret,
-      { expiresIn: jwtConfig.accessTokenExpiry }
-    );
-    
-    // Create refresh token
-    const refreshToken = jwt.sign(
-      userDataForToken,
-      jwtConfig.jwtRefreshSecret,
-      { expiresIn: jwtConfig.refreshTokenExpiry }
-    );
-    
-    return { accessToken, refreshToken };
+  generateTokens: async (user) => {
+    try {
+      // Get the current token version
+      const [versionResult] = await pool.query('SELECT token_version FROM users WHERE id = ?', [user.id]);
+      const tokenVersion = versionResult[0]?.token_version || 0;
+      
+      // Remove sensitive data from user object
+      const userDataForToken = {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        tokenVersion 
+      };
+      
+      // Create access token
+      const accessToken = jwt.sign(
+        userDataForToken,
+        jwtConfig.jwtSecret,
+        { expiresIn: jwtConfig.accessTokenExpiry }
+      );
+      
+      // Create refresh token
+      const refreshToken = jwt.sign(
+        userDataForToken,
+        jwtConfig.jwtRefreshSecret,
+        { expiresIn: jwtConfig.refreshTokenExpiry }
+      );
+      
+      return { accessToken, refreshToken };
+    } catch (error) {
+      console.error('Error generating tokens:', error);
+      throw error;
+    }
   },
   
   // Verify access token
@@ -81,13 +91,25 @@ const authService = {
     }
   },
   
-  // Remove refresh token from database
-  removeRefreshToken: async (userId) => {
+  // Remove refresh token from database and invalidate all tokens by incrementing version
+  invalidateUserTokens: async (userId) => {
     try {
-      await pool.query('UPDATE users SET refresh_token = NULL WHERE id = ?', [userId]);
+      await pool.query('UPDATE users SET token_version = token_version + 1, refresh_token = NULL WHERE id = ?', [userId]);
       return true;
     } catch (error) {
-      console.error('Error removing refresh token:', error);
+      console.error('Error invalidating tokens:', error);
+      return false;
+    }
+  },
+  
+  // Check if token version is still valid
+  isTokenVersionValid: async (userId, tokenVersion) => {
+    try {
+      const [rows] = await pool.query('SELECT token_version FROM users WHERE id = ?', [userId]);
+      if (rows.length === 0) return false;
+      return rows[0].token_version === tokenVersion;
+    } catch (error) {
+      console.error('Error checking token version:', error);
       return false;
     }
   },
