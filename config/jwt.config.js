@@ -1,3 +1,4 @@
+//jwt cnfg
 const dotenv = require('dotenv');
 dotenv.config();
 
