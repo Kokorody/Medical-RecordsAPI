@@ -156,7 +156,6 @@ const swaggerOptions = {
     paths: {
       '/auth/register': {
         post: {
-          security: [],
           summary: 'Register a new user',
           requestBody: {
             required: true,
@@ -177,6 +176,7 @@ const swaggerOptions = {
           responses: {
             '201': { description: 'User registered successfully' },
             '400': { description: 'User already exists' },
+            '401': { description: 'Unauthorized - Invalid or missing token' }, 
             '500': { description: 'Server error' }
           }
         }
